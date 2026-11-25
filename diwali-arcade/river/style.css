@@ -64,3 +64,9 @@ h2{margin:8px 0 6px;font-size:clamp(31px,5vh,50px);letter-spacing:-.04em;line-he
 @media(max-aspect-ratio:1/1){#world{inset:20% 0 auto;height:50%;}header{top:4%;left:6%}#meter{right:6%;top:4%;padding:6px 10px}#meter-title{font-size:8px}h1{font-size:clamp(29px,7.5vw,50px)}.shade{background:linear-gradient(to bottom,#141329 17%,transparent 23%,transparent 67%,#191528 72%)}#quote{left:6%;right:6%;max-width:none;bottom:16%}#quote p{font-size:19px}#controls{left:6%;right:auto;bottom:6%}.spot .tag{font-size:9px;padding:3px 5px}#actor{height:18cqh}}
 @media(max-height:490px) and (min-aspect-ratio:1/1){header{top:13px}h1{font-size:32px}.rule{margin:5px 0}#quote{bottom:2%;max-width:61%}#controls{font-size:9px}#quote p{font-size:13px}.page-panel,.ritual-panel{padding:15px 20px}#page-copy{margin:9px 0 13px;font-size:16px}}
 @media(prefers-reduced-motion:reduce){.fire,.glint{animation:none}.walk-point{display:none}}
+.companion{position:absolute;transform:translate(-50%,-100%);aspect-ratio:.57;border:0;background:none;padding:0;cursor:pointer}
+.companion img{display:block;height:100%;width:100%;object-fit:contain;filter:drop-shadow(1px 2px 1px #291c3660)}
+.companion-name{position:absolute;top:0;left:50%;transform:translate(-50%,-125%);font-size:11px;letter-spacing:.05em;color:#fff5d7;text-shadow:0 1px 2px #1f1622;background:#2b1c29d9;border:1px solid #d6ae77;padding:3px 9px;border-radius:3px}
+.companion.following{pointer-events:none;opacity:1}
+.companion.following .companion-name{display:none}
+#replay{position:absolute;top:clamp(165px,24vh,250px);left:3.4%;z-index:4}
