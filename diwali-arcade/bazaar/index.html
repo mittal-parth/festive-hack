@@ -9,5 +9,11 @@
 <header><div class="location"><span id="chapter">DIWALI EVE</span><h1 id="place">Mithai Bazaar</h1></div>
 <div class="gear"><div class="inventory" aria-live="polite"><canvas id="box-icon" width="26" height="22" aria-hidden="true"></canvas><div><small id="count-label">MITHAI BOX</small><b id="count">0 / 3</b></div></div><button class="square" id="sound" aria-label="Enable sound" title="Enable sound">♪</button><button class="square" id="help" aria-label="Controls" title="Controls">?</button></div></header>
 <footer><div class="quest"><i></i><div><span id="speaker">DADI’S ERRAND</span><p id="objective" aria-live="polite">Pick up a laddu from the golden stall.</p></div></div><div id="hint">Click to walk <b>·</b> WASD <b>·</b> E to interact</div></footer>
-<dialog id="panel"><div class="panel-content"><div class="eyebrow"><i></i><span id="dialog-tag"></span></div><h2 id="dialog-title"></h2><p id="dialog-body"></p><div id="choices"></div><p id="feedback" aria-live="polite"></p><div id="actions"></div></div></dialog>
+<section id="counter" hidden aria-label="Sweet packing counter">
+  <div class="counter-top"><div><small id="stall-label">GOLDEN STALL</small><h2 id="counter-title">Pack the laddu</h2></div><button type="button" id="leave" aria-label="Leave counter">×</button></div>
+  <div class="worktop"><div class="ledges"><button id="tray" type="button" aria-label="Pick up a sweet"><canvas id="tray-art" width="76" height="52"></canvas></button><span>Sweet tray</span></div>
+  <div class="ledges"><div id="gift-box" role="group" aria-label="Gift box"></div><span>Dadi’s mithai box</span></div></div>
+  <p id="packing-hint" aria-live="polite">Drag a sweet into an empty space. Space lifts and places.</p>
+</section>
+<dialog id="panel"><div class="panel-content"><div class="eyebrow"><i></i><span id="dialog-tag"></span></div><h2 id="dialog-title"></h2><p id="dialog-body"></p><div id="actions"></div></div></dialog>
 </main><script src="bazaar.js"></script></body></html>

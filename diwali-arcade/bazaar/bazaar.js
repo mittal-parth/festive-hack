@@ -9,12 +9,16 @@
   const locations = [
     {x:192,y:363,mx:158,my:301,label:'Laddu stall'},
     {x:763,y:362,mx:829,my:303,label:'Katli stall'},
-    {x:471,y:284,mx:477,my:263,label:'Meet Dadi'},
-    {x:376,y:442,mx:376,my:422,label:'Follow the light'},
-    {x:532,y:337,mx:532,my:319,label:'Next lamp'},
-    {x:483,y:209,mx:483,my:188,label:'City gate'},
+    {x:471,y:284,mx:477,my:263,label:'Deliver the gift'},
+    {x:376,y:442,mx:376,my:422,label:'Riverside wicks'},
+    {x:532,y:337,mx:532,my:319,label:'Courtyard wicks'},
+    {x:483,y:209,mx:483,my:188,label:'Gateway wicks'},
   ];
-  const tasks = ['Pick up a laddu from the golden stall.','Choose two kaju katli at the pink stall.','Take the mithai box to Dadi at the gate.','Walk with Sita and Lakshmana to the first lamp.','Follow the next lamp toward the city gate.','Bring Rama home through the gate.'];
+  const tasks = ['Pack one laddu at the golden stall.','Pack two kaju katli from the pink stall.','Carry the gift box to Dadi at the gate.','As Rama, carry a flame to the riverside wicks.','Light the courtyard for Sita and Lakshmana.','Pass your flame to the gateway lamps.'];
+  const counter = byId('counter');
+  const slots = [null,null,null];
+  let carried = null, ghost = null, pointerOrigin = null, giftAt = 0, flameHold = false, flameProgress = 0;
+  let lightingNear = false, litTimes = [];
   const art = {
     child: {
       front:['      HHHHHH      ','    HHHhhhhHHH    ','   HhhhKhHHhhHH   ','  HHhhHHHHhhhhHH  ','  HHHHhFfFHHHHHH  ','  HhFFFFFFFFfHHH  ','  HFFFFFfFFFfFHH  ','  hFHKFFfFHKFFhH  ','   FFKFFfFFKFFf   ','   fFFfFffFFFFf   ','    fFFfFFSFFf    ','     fFFfFFFf     ','      SffffS      '],
@@ -61,7 +65,6 @@
     r(1,17,24,2,'#8e6370');r(3,19,20,1,'#61465a');r(2,16,22,2,'#deb784');
     if(kind==='laddu'){r(5,9,15,7,'#ae5728');r(7,6,11,11,'#e58a28');r(9,5,7,12,'#ffb644');r(8,8,3,2,'#ffde80');r(15,10,3,2,'#de872b');r(10,13,2,2,'#c87025');r(14,6,2,2,'#84a14e')}
     if(kind==='katli'){for(let i=0;i<6;i++){r(12-i*2,4+i,i*4+2,1,'#fff1d8');r(2+i*2,10+i,22-i*4,1,'#c6bfd0');r(2+i*2,12+i,22-i*4,1,'#debc86')}r(9,8,5,1,'#b9b5c9');r(14,7,3,1,'#c8c5d6')}
-    if(kind==='jalebi'){[[5,5,12,3],[3,7,4,8],[5,14,15,3],[18,7,3,8],[9,8,9,3],[8,10,3,4],[11,12,5,2]].forEach(v=>r(...v,'#fa9439'));r(6,6,9,1,'#ffd174')}
   }
   sweetIcon(byId('box-icon').getContext('2d'),'box');
   function update(){
@@ -77,6 +80,8 @@
   }
   function reset(){
     step=0;packed=0;finish=false;pos={x:473,y:431};target=null;autoUse=false;walking=false;facing='front';walkTime=0;lastTap=null;
+    slots.fill(null);dropHeld();counter.hidden=true;giftAt=0;flameHold=false;flameProgress=0;lightingNear=false;litTimes=[];
+    marker.classList.remove('charging');markerStep=-1;
     byId('scenery').src='market.png';byId('scenery').alt='Lanterns light two sweet stalls around a paved Diwali market.';update();scene.focus({preventScroll:true});
   }
   function tone(freq,duration=.14){
@@ -84,40 +89,92 @@
     try{audio??=new AudioContext();audio.resume();const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.10,audio.currentTime+.012);gain.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);osc.connect(gain).connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration+.01)}catch{}
   }
   function close(){panel.close();keys.clear();scene.focus({preventScroll:true})}
-  function show(tag,title,body,actions=[],choices=[]){
+  function show(tag,title,body,actions){
     target=null;autoUse=false;keys.clear();walking=false;
     byId('dialog-tag').textContent=tag;byId('dialog-title').textContent=title;byId('dialog-body').textContent=body;
-    byId('feedback').textContent='';const row=byId('actions'),cards=byId('choices');row.replaceChildren();cards.replaceChildren();
-    choices.forEach(([name,kind,act])=>{const b=document.createElement('button'),c=document.createElement('canvas');b.type='button';c.width=26;c.height=22;sweetIcon(c.getContext('2d'),kind);b.append(c,document.createTextNode(name));b.onclick=act;cards.append(b)});
-    actions.forEach(([name,act],i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;if(i||choices.length)b.className='secondary';b.onclick=act;row.append(b)});
+    const row=byId('actions');row.replaceChildren();
+    actions.forEach(([name,act],i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;if(i)b.className='secondary';b.onclick=act;row.append(b)});
     if(!panel.open)panel.showModal();
   }
-  function shop(){
-    const first=step===0;
-    const options=[['Laddu','laddu'],['Jalebi','jalebi'],['Kaju katli','katli']];
-    const select=kind=>{
-      if(kind!==(first?'laddu':'katli')){byId('feedback').textContent=first?'Look for the round, golden sweet made of little boondi pearls.':'Look for the silver-topped cashew diamonds.';tone(196);return}
-      packed++;tone(packed===2?523:659);update();
-      if(!first&&packed===2){byId('feedback').textContent='One diamond packed. Choose a second for our neighbour.';return}
-      step++;update();close();
-    };
-    show('MITHAI COUNTER',first?'One for Dadi':'Two to share',first?'“Dadi always picks the round golden one, made from tiny boondi pearls.” Choose her laddu.':'“One for our box and one for next door.” Pick the silver-topped cashew diamonds.',[['Leave the stall',close]],options.map(([name,kind])=>[name,kind,()=>select(kind)]));
+  function sweetCanvas(kind){
+    const c=document.createElement('canvas');c.width=26;c.height=22;sweetIcon(c.getContext('2d'),kind);c.setAttribute('aria-hidden','true');return c;
   }
+  function drawCounter(){
+    const first=step===0, kind=first?'laddu':'katli';
+    byId('stall-label').textContent=first?'GOLDEN STALL':'PINK STALL';
+    byId('counter-title').textContent=first?'Pack one laddu':'Pack two kaju katli';
+    const tray=byId('tray-art').getContext('2d');tray.clearRect(0,0,76,52);
+    tray.fillStyle='#5c3742';tray.fillRect(3,34,70,12);tray.fillStyle='#d09356';tray.fillRect(4,31,68,13);tray.fillStyle='#fbd18a';tray.fillRect(4,30,68,10);
+    const pastry=sweetCanvas(kind);
+    [[8,14],[26,7],[45,12],[18,21],[36,22]].forEach(([x,y],i)=>{if(carried&&i===4)return;tray.drawImage(pastry,0,0,26,17,x,y,26,17)});
+    const box=byId('gift-box');box.replaceChildren();
+    slots.forEach((item,i)=>{
+      const slot=document.createElement('button');slot.type='button';slot.className='compartment';slot.dataset.slot=i;
+      slot.setAttribute('aria-label',item?'Filled space '+(i+1):'Empty space '+(i+1));
+      if(item)slot.append(sweetCanvas(item));else if(carried)slot.classList.add('aim');
+      slot.onclick=()=>placeSweet(i);box.append(slot);
+    });
+    byId('packing-hint').textContent=carried?'Place it in an empty space, or press Space.':'Drag a sweet into the box. Space lifts and places.';
+  }
+  function liftSweet(){
+    if(carried)return;
+    carried=step===0?'laddu':'katli';tone(440,.10);drawCounter();
+  }
+  function dropHeld(){ghost?.remove();ghost=null;pointerOrigin=null;carried=null}
+  function leaveCounter(){dropHeld();counter.hidden=true;marker.hidden=false;keys.clear();scene.focus({preventScroll:true})}
+  function placeSweet(slot){
+    if(!carried||slot<0||slots[slot])return;
+    slots[slot]=carried;dropHeld();packed++;tone(494+packed*70);update();drawCounter();
+    if(packed===1||packed===3){step++;update();leaveCounter()}
+  }
+  function shop(){
+    target=null;autoUse=false;walking=false;keys.clear();counter.hidden=false;marker.hidden=true;
+    drawCounter();byId('tray').focus({preventScroll:true});
+  }
+  byId('leave').onclick=leaveCounter;
+  byId('tray').addEventListener('pointerdown',e=>{
+    e.preventDefault();liftSweet();pointerOrigin={x:e.clientX,y:e.clientY};
+    ghost=sweetCanvas(carried);ghost.className='carried-sweet';document.body.append(ghost);
+    ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';byId('tray').setPointerCapture(e.pointerId);
+  });
+  byId('tray').addEventListener('pointermove',e=>{if(ghost){ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px'}});
+  byId('tray').addEventListener('pointerup',e=>{
+    if(!pointerOrigin)return;
+    const slot=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-slot]');
+    ghost?.remove();ghost=null;pointerOrigin=null;
+    if(slot)placeSweet(Number(slot.dataset.slot));
+  });
+  byId('tray').addEventListener('pointercancel',()=>{dropHeld();drawCounter()});
+  byId('tray').onclick=e=>{if(e.detail===0&&!counter.hidden)liftSweet()};
   function startStory(){
-    close();step=3;pos={x:480,y:497};facing='back';target=null;
+    giftAt=0;step=3;pos={x:480,y:497};facing='back';target=null;
     const image=byId('scenery');image.src='palace.png';image.alt='A procession of glowing diyas leads to the golden gates of Ayodhya.';update();tone(392,.5);
   }
   function interact(){
-    if(finish||panel.open)return;
+    if(finish||panel.open||!counter.hidden||giftAt)return;
     const point=locations[step];
     if(Math.hypot(point.x-pos.x,point.y-pos.y)>31){walkTo(point,true);return}
     target=null;autoUse=false;
     if(step<2){shop();return}
-    if(step===2){show('DADI · AT THE GATE','An old welcome','“We take mithai next door so everyone has a share in Diwali. When I was little, my dadi told me how Ayodhya lit rows of diyas to welcome Rama, Sita and Lakshmana home after fourteen years away. Come, walk it with me.”',[['Enter the story',startStory],['Stay a moment',close]]);return}
+    if(step===2){
+      giftAt=performance.now();keys.clear();walking=false;marker.hidden=true;tone(659,.4);
+      byId('objective').textContent='Dadi takes the box to share with the neighbours.';return;
+    }
+    byId('objective').textContent='Hold Space or the wick label to pass Rama’s flame.';
+  }
+  function ignite(dt,now){
+    if(step<3||finish)return;
+    const point=locations[step],near=Math.hypot(point.x-pos.x,point.y-pos.y)<32;
+    if(near!==lightingNear){lightingNear=near;byId('landmark-name').textContent=near?'Hold to light':point.label;marker.classList.toggle('charging',near);byId('objective').textContent=near?'Hold Space or the wick label to pass Rama’s flame.':tasks[step]}
+    if(near&&flameHold&&!walking){flameProgress=Math.min(1,flameProgress+dt/1.05)}
+    else flameProgress=Math.max(0,flameProgress-dt*1.2);
+    marker.style.setProperty('--lit',Math.round(flameProgress*100)+'%');
+    if(flameProgress<1)return;
+    litTimes[step-3]=now;flameProgress=0;flameHold=false;lightingNear=false;marker.classList.remove('charging');
     tone([392,523,659][step-3],.48);
     if(step<5){step++;update();return}
     finish=true;update();
-    show('DIWALI · THE HOMECOMING','Home, at last','You walked as Rama along the lamp-lit road. Back at the bazaar, Dadi tucks the last kaju katli into your neighbour’s box. This year, you carry her welcome to the next doorstep.',[['Play again',()=>{close();reset()}]]);
+    window.setTimeout(()=>{if(!finish)return;show('DIWALI · THE HOMECOMING','Ayodhya glows','Three rows of diyas welcome Rama, Sita and Lakshmana home after fourteen years away.',[['Play again',()=>{close();reset()}]])},900);
   }
   function inside(p,poly){
     let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if((a[1]>p.y)!==(b[1]>p.y)&&p.x<(b[0]-a[0])*(p.y-a[1])/(b[1]-a[1])+a[0])hit=!hit}return hit;
@@ -135,20 +192,29 @@
     pos=next;
   }
   scene.addEventListener('pointerdown',e=>{
-    if(finish||panel.open)return;
+    if(finish||panel.open||!counter.hidden||giftAt)return;
     const r=scene.getBoundingClientRect(),p={x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H},point=locations[step];
     scene.focus({preventScroll:true});
     if(Math.hypot(p.x-point.x,p.y-point.y)<40||Math.hypot(p.x-point.mx,p.y-point.my)<56){interact();return}
     walkTo(p,false);
   });
+  marker.addEventListener('pointerdown',e=>{if(step>=3){flameHold=true;marker.setPointerCapture(e.pointerId)}});
+  window.addEventListener('pointerup',()=>{flameHold=false});
+  window.addEventListener('pointercancel',()=>{flameHold=false});
   marker.addEventListener('click',()=>{scene.focus({preventScroll:true});interact()});
   byId('sound').onclick=()=>{soundOn=!soundOn;byId('sound').setAttribute('aria-pressed',String(soundOn));byId('sound').setAttribute('aria-label',soundOn?'Mute sound':'Enable sound');tone(523);scene.focus({preventScroll:true})};
-  byId('help').onclick=()=>show('CONTROLS','Around the bazaar','Walk with the arrow keys or WASD. Tap a place to walk there, or tap a gold label to walk up and interact. Press E to visit your current destination.',[['Back to the story',close],['Start again',()=>{close();reset()}]]);
+  byId('help').onclick=()=>{if(!counter.hidden||giftAt||finish)return;show('CONTROLS','Around the bazaar','Walk with the arrow keys or WASD. Tap a place to walk there, or tap a gold label to walk up and interact. Press E to approach a stall. Drag sweets into the box, or use Space to lift and place them. Beside a lamp, hold Space to light its wick.',[['Back to the story',close],['Start again',()=>{close();reset()}]])};
   panel.addEventListener('cancel',e=>{e.preventDefault();if(!finish)close()});
-  window.addEventListener('blur',()=>keys.clear());
-  document.addEventListener('keydown',e=>{if(panel.open||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();if(['a','s','d','w','arrowup','arrowdown','arrowleft','arrowright'].includes(k)){e.preventDefault();keys.add(k);target=null;autoUse=false}
+  window.addEventListener('blur',()=>{keys.clear();flameHold=false});
+  document.addEventListener('keydown',e=>{if(panel.open||e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();
+    if(!counter.hidden){
+      if(k==='escape'){e.preventDefault();leaveCounter();return}
+      if(k===' '){e.preventDefault();if(!e.repeat){if(carried)placeSweet(slots.indexOf(null));else liftSweet()}}return;
+    }
+    if(k===' '&&step>=3){e.preventDefault();if(!e.repeat)flameHold=true;return}
+    if(['a','s','d','w','arrowup','arrowdown','arrowleft','arrowright'].includes(k)){e.preventDefault();keys.add(k);target=null;autoUse=false}
     if(k==='e'&&!e.repeat){e.preventDefault();interact()}});
-  document.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+  document.addEventListener('keyup',e=>{keys.delete(e.key.toLowerCase());if(e.key===' ')flameHold=false});
   function character(role,x,y,direction,stride,player=false){
     const scale=step<3?.91+(y-270)/360:.57+(y-190)/335;
     const sh=43*scale,sw=28*scale;
@@ -173,17 +239,32 @@
       [[415,442],[477,426],[540,442],[540,482],[476,498],[415,482]].forEach(([x,y])=>lamp(x,y,t));
       character('dadi',507,280,'front',0);
     }else{
-      for(let i=3;i<=step;i++){const l=locations[i];lamp(l.x,l.y,t)}
+      for(let i=3;i<6;i++){
+        const l=locations[i],litAt=litTimes[i-3],spread=litAt===undefined?0:Math.min(1,(now-litAt)/680);
+        for(let n=0;n<7;n++){
+          const x=l.x+10+n*4, y=l.y-2-n*2;
+          ctx.fillStyle='#623b42';ctx.fillRect(x-3,y-1,7,2);ctx.fillStyle='#eaaa74';ctx.fillRect(x-4,y-2,8,1);
+          if(litAt!==undefined && n/7<=spread)lamp(x,y,t);
+        }
+        if(step===i&&flameProgress>0){ctx.fillStyle='#fc9749';ctx.fillRect(l.x+7,l.y-4,Math.ceil(4*flameProgress),-Math.ceil(7*flameProgress))}
+      }
       const sx=20*(.5+(pos.y-190)/340),sy=7*(.5+(pos.y-190)/340);
       character('sita',pos.x-sx,pos.y-sy,facing,walking?Math.floor(walkTime*8)%2:0);
       character('lakshmana',pos.x+sx,pos.y-sy,facing,walking?1-Math.floor(walkTime*8)%2:0);
     }
     if(lastTap){const age=(now-lastTap.at)/650;if(age>=0&&age<1){ctx.strokeStyle='rgba(255,230,168,'+(1-age)+')';ctx.beginPath();ctx.ellipse(lastTap.x,lastTap.y,5+age*16,2+age*6,0,0,Math.PI*2);ctx.stroke()}}
     character(step<3?'child':'rama',pos.x,pos.y,facing,walking?Math.floor(walkTime*8)%2?1:-1:0,true);
+    if(step>=3)lamp(pos.x+7,pos.y-13,t);
+    if(packed>0&&step<3){
+      const f=giftAt?Math.min(1,(now-giftAt)/730):0;
+      const x=(pos.x+6)*(1-f)+505*f,y=(pos.y-12)*(1-f)+266*f;
+      ctx.drawImage(byId('box-icon'),Math.round(x-6),Math.round(y-6),14,12);
+    }
   }
   function frame(now){
     const dt=Math.min((now-(last||now))/1000,.04);last=now;
-    if(!panel.open&&!finish){
+    if(giftAt&&now-giftAt>1800)startStory();
+    if(!panel.open&&!finish&&counter.hidden&&!giftAt){
       const dx=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));
       const dy=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));
       if(dx||dy)move(dx*200,dy*200,dt);
@@ -191,6 +272,7 @@
         const before=pos;move(target.x-pos.x,target.y-pos.y,dt);
         if(Math.hypot(target.x-pos.x,target.y-pos.y)<2||(before.x===pos.x&&before.y===pos.y&&dt>0)){const act=autoUse;target=null;autoUse=false;walking=false;if(act)interact()}
       }else walking=false;
+      ignite(dt,now);
     }
     draw(now);requestAnimationFrame(frame);
   }
