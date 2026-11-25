@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f0df">
+<title>The Diwali Arcade · Khel Katha</title>
+<link rel="icon" href="art/diya.svg" type="image/svg+xml">
+<link rel="stylesheet" href="gallery.css">
+<script src="gallery.js" defer></script>
+</head>
+<body>
+<div id="library">
+  <header class="mast">
+    <div class="brand"><img src="art/diya.svg" alt="" width="34" height="34">Khel Katha</div>
+    <div class="tools"><button class="help" id="view-toggle" type="button" aria-pressed="false"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 6.5h12v10h-12zM6 3h11.5v10"/><path d="m4 14 3.5-4 2.3 2 1.5-1.5 2 2"/></svg> Game views</button><button class="help" id="help-open"><span aria-hidden="true">?</span> How to play</button></div>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <h1 id="title">The <em>Diwali</em> Arcade</h1>
+      <p>Pick a world. Play a family tradition. Step into the story behind it.</p>
+    </section>
+    <nav class="worlds" aria-label="Choose a world">
+      <a class="box courtyard" href="#courtyard" aria-label="Play Rangoli Courtyard">
+        <div class="cover"><img src="art/courtyard.jpg" alt="A child places pink powder in a courtyard rangoli beneath marigold garlands"><span class="medium">Ink &amp; colour</span></div>
+        <div class="caption"><div><h2>Rangoli Courtyard</h2><p>Make a welcome in colour.</p></div><span class="play" aria-hidden="true"></span></div>
+      </a>
+      <a class="box bazaar" href="#bazaar" aria-label="Play Mithai Bazaar">
+        <div class="cover"><img src="art/bazaar.jpg" alt="A child carries sweets between pixel-art shops lit by golden lanterns"><span class="medium">Pixel art</span></div>
+        <div class="caption"><div><h2>Mithai Bazaar</h2><p>Bring home a box of sweets.</p></div><span class="play" aria-hidden="true"></span></div>
+      </a>
+      <a class="box river" href="#river" aria-label="Play River of Lights">
+        <div class="cover"><img src="art/river.jpg" alt="A child lights a diya by a river reflecting the lights of the ghats"><span class="medium">Painted storybook</span></div>
+        <div class="caption"><div><h2>River of Lights</h2><p>Light the way home.</p></div><span class="play" aria-hidden="true"></span></div>
+      </a>
+    </nav>
+    <div class="navigation-hint"><span class="ornament" aria-hidden="true">✣</span><span><kbd>←</kbd> <kbd>→</kbd> Choose a world</span><span><kbd>Enter</kbd> Play</span><span class="ornament" aria-hidden="true">✣</span></div>
+  </main>
+</div>
+<section id="stage" hidden aria-label="Game">
+  <div class="stagebar"><button id="library-back" aria-label="Return to world selection"><span aria-hidden="true">▦</span> Worlds</button><strong id="game-title"></strong><button id="expand">Full screen</button></div>
+  <div id="screen"></div>
+</section>
+<dialog id="help" aria-labelledby="help-title"><div class="dialog-body">
+  <button id="help-close" aria-label="Close instructions">×</button>
+  <img src="art/diya.svg" width="45" height="45" alt="">
+  <h2 id="help-title">How to play</h2>
+  <p>Choose a cover to enter its world. Walk with the arrow keys or WASD, or tap a spot to move there.</p>
+  <p>Follow the task shown in the scene. Each family’s preparations lead into a playable telling of Rama, Sita and Lakshmana’s homecoming in Ayodhya.</p>
+  <p>Use <strong>Worlds</strong> above the game to return to the arcade. Reopening a world starts a fresh playthrough.</p>
+  <button class="dialog-action" id="choose">Choose a world</button>
+</div></dialog>
+</body></html>
