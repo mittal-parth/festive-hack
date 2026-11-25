@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#141329"><title>River of Lights</title><link rel="stylesheet" href="style.css"><script src="game.js" defer></script></head>
+<body>
+<main id="game" aria-label="River of Lights adventure">
+  <div id="world" role="group" aria-label="Walkable riverside terrace">
+    <div id="scenery"></div><div id="glints" aria-hidden="true"></div>
+    <div id="targets"></div>
+    <div id="actor" aria-label="Arun"><i></i><img src="assets/arun.png" alt=""></div>
+    <div id="dust" aria-hidden="true"></div>
+  </div>
+  <div class="shade" aria-hidden="true"></div>
+  <header><p id="location">Sarayu Ghat · Diwali eve</p><h1 id="title">River of Lights</h1><div class="rule" aria-hidden="true"></div><p id="objective">Light three diyas with Dadi.</p></header>
+  <div id="meter" aria-live="polite"><span id="meter-title">Diyas lit</span><b id="count">0 / 3</b></div>
+  <div id="quote" aria-live="polite"><small>Dadi</small><p>“Bring your flame, Arun. This little row is ours to light.”</p></div>
+  <div id="controls"><span>Arrow keys or tap to walk</span><span><kbd>E</kbd> Interact</span></div>
+  <section id="ritual" class="overlay" hidden aria-label="Lighting a diya" role="dialog" aria-modal="true">
+    <div class="ritual-panel"><button id="cancel" class="close" aria-label="Return to the ghat">×</button><p class="eyebrow">At the ghat</p><h2>Light the wick</h2><p>Bring the flame to the cotton wick.</p>
+    <div id="work"><img src="assets/diya.png" alt="A clay lamp filled with oil"><div id="wick" aria-hidden="true"></div><button id="taper" aria-label="Drag the burning taper to the wick"><i class="fire"></i></button></div>
+    <button id="light-key" class="gold-button">Hold to light <kbd>E</kbd></button>
+    </div>
+  </section>
+  <section id="page" class="overlay" hidden aria-labelledby="page-title" role="dialog" aria-modal="true"><div class="page-panel"><div class="flourish" aria-hidden="true">✧</div><p class="eyebrow" id="page-tag"></p><h2 id="page-title"></h2><p id="page-copy"></p><button id="continue" class="gold-button"></button></div></section>
+</main></body></html>
