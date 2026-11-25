@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Mithai Bazaar</title><link rel="stylesheet" href="bazaar.css"></head>
+<body><main id="app">
+<div id="world">
+  <img id="scenery" src="market.png" alt="A Diwali market with marigold and pink awnings and a decorated city gate.">
+  <canvas id="scene" width="960" height="540" tabindex="0" aria-label="Walk through the market using the arrow keys or tap the ground."></canvas>
+  <button id="landmark" class="landmark"><span id="landmark-icon">◆</span><span id="landmark-name">Laddu stall</span></button>
+</div>
+<header><div class="location"><span id="chapter">DIWALI EVE</span><h1 id="place">Mithai Bazaar</h1></div>
+<div class="gear"><div class="inventory" aria-live="polite"><canvas id="box-icon" width="26" height="22" aria-hidden="true"></canvas><div><small id="count-label">MITHAI BOX</small><b id="count">0 / 3</b></div></div><button class="square" id="sound" aria-label="Enable sound" title="Enable sound">♪</button><button class="square" id="help" aria-label="Controls" title="Controls">?</button></div></header>
+<footer><div class="quest"><i></i><div><span id="speaker">DADI’S ERRAND</span><p id="objective" aria-live="polite">Pick up a laddu from the golden stall.</p></div></div><div id="hint">Click to walk <b>·</b> WASD <b>·</b> E to interact</div></footer>
+<dialog id="panel"><div class="panel-content"><div class="eyebrow"><i></i><span id="dialog-tag"></span></div><h2 id="dialog-title"></h2><p id="dialog-body"></p><div id="choices"></div><p id="feedback" aria-live="polite"></p><div id="actions"></div></div></dialog>
+</main><script src="bazaar.js"></script></body></html>
