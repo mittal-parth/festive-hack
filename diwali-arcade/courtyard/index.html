@@ -15,14 +15,14 @@
   </div>
   <header>
     <div class="chapter"><span class="eyebrow" id="chapter">DIWALI EVE</span><h1 id="title">Rangoli Courtyard</h1><div class="progress"><span id="goal">Finish Nani’s rangoli</span><span id="count">0 / 3</span></div></div>
-    <button class="help" id="help" aria-label="Game controls" title="Game controls">?</button>
+    <div class="control-pair"><span class="key-hint"><kbd>WASD</kbd> move <b>·</b> <kbd>E</kbd> interact</span><button class="help" id="help" aria-label="Game controls" title="Game controls">?</button></div>
   </header>
   <footer>
-    <div class="line" aria-live="polite"><div class="portrait" id="portrait"></div><div><span class="eyebrow" id="speaker">NANI</span><p id="speech">I’ve started the flower, beta. Choose a colour, then tap an empty petal to fill it.</p></div></div>
+    <div class="line" aria-live="polite"><div class="portrait" id="portrait"></div><div><span class="eyebrow" id="speaker">RANGOLI POWDER</span><p id="speech">Choose a powder and fill the three chalk petals.</p></div></div>
     <div class="tools" id="tools"><div class="swatches" aria-label="Rangoli powder colours"><button data-color="0" aria-label="Rose powder" aria-pressed="true"></button><button data-color="1" aria-label="Turmeric powder" aria-pressed="false"></button><button data-color="2" aria-label="Peacock powder" aria-pressed="false"></button></div><span id="toolLabel">Rose powder</span></div>
     <button class="action" id="action" hidden>Light the diya</button>
   </footer>
-  <dialog id="guide"><h2>How to play</h2><p>Click or tap the ground to walk. Tap a marked petal or doorway to walk there and interact.</p><p>Use <b>WASD</b> or the <b>arrow keys</b> to walk, <b>E</b> to interact nearby, and <b>1–3</b> to choose a rangoli powder.</p><button id="close" class="action">Return to game</button></dialog>
+  <dialog id="guide"><h2>How to play</h2><p>Click or tap the ground to walk. Click a marked object to walk there and interact.</p><p>Use <b>WASD</b> or the <b>arrow keys</b> to walk, <b>E</b> to interact nearby, and <b>1–3</b> to choose a rangoli powder.</p><button id="close" class="action">Return to game</button></dialog>
 </main>
 <script src="game.js"></script>
 </body>

@@ -14,15 +14,22 @@
   const stage = el("stage"), guide = el("guide");
   const player = {x:691,y:689,face:1,walking:false};
   const friend = {x:610,y:700};
-  const road = [{x:989,y:693},{x:652,y:527},{x:805,y:346}];
+  const basket={x:976,y:693}, leftPost={x:681,y:423}, rightPost={x:923,y:423}, gate={x:804,y:346};
+  const homecoming=[
+    {...basket,label:"Pick up the marigold garland",goal:"Collect the marigold garland"},
+    {...leftPost,label:"Hang the first end",goal:"Hang one end on the left post"},
+    {...rightPost,label:"Hang the second end",goal:"Stretch the garland to the right post"},
+    {...gate,label:"Walk through the welcome gate",goal:"Walk under the garland together"}
+  ];
   let phase, color, count, destination, actionTarget, painting, targetList, effect, visited;
   let t=0, previous=0, width=0, height=0, scale=1, dx=0, dy=0, gait=0;
   const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
   const ease=v=>1-Math.pow(1-v,3);
-  function setLine(text, speaker="NANI") {
-    el("speaker").textContent = speaker;
+  function setLine(text) {
+    const story=phase==="story"||phase==="end";
+    el("speaker").textContent = story ? (phase==="end"?"HOMECOMING":"MARIGOLD GARLAND") : (phase==="diya"?"THE FIRST DIYA":"RANGOLI POWDER");
     el("speech").textContent = text;
-    el("portrait").style.backgroundImage = 'url('+ (speaker==="RAMA" ? "rama" : speaker==="AARAV" ? "child" : "nani") +'.png)';
+    el("portrait").style.backgroundImage = 'url('+ (story ? "rama" : "child") +'.png)';
   }
   function selectColor(index) {
     color=index;
@@ -39,12 +46,12 @@
     }
     el("chapter").textContent="DIWALI EVE";el("title").textContent="Rangoli Courtyard";
     el("goal").textContent="Finish Nani’s rangoli";el("count").textContent="0 / 3";el("tools").hidden=false;el("action").hidden=true;
-    setLine("I’ve started the flower, beta. Choose a colour, then tap an empty petal to fill it.");selectColor(0);updateTargets();
+    setLine("Choose a powder and fill the three chalk petals.");selectColor(0);updateTargets();
   }
   function updateTargets(){
     if(phase==="paint") targetList=petals.filter(p=>!p.fill).map(p=>({x:p.x,y:p.y,id:p.id,label:"Fill petal "+(p.id+1),size:78}));
     else if(phase==="diya") targetList=[{x:cx,y:cy,id:"diya",label:"Light the diya",size:95}];
-    else if(phase==="story") targetList=[{...road[visited],id:"way",label:["Visit the first lights","Meet the neighbours","Enter the gate"][visited],size:108}];
+    else if(phase==="story") targetList=[{...homecoming[visited],id:"garland",size:96}];
     else targetList=[];
     el("targets").replaceChildren();
     targetList.forEach(place=>{
@@ -80,14 +87,15 @@
       petal.fill=colors[color]; painting={petal,elapsed:0}; updateTargets();
     } else if(phase==="diya"){beginStory()}
     else if(phase==="story"){
-      const p=road[visited];burst(p.x,p.y,"#ffd56e",28);visited++;
-      if(visited===3){
+      const p=homecoming[visited];burst(p.x,p.y-25,"#ffd56e",30);visited++;
+      if(visited===homecoming.length){
         phase="end";el("goal").textContent="Home at last";el("count").textContent="✦";
-        setLine("So that’s who the lights are for, Nani. Can we put one by our own gate?","AARAV");
+        setLine("Rama, Sita and Lakshmana enter Ayodhya beneath your marigolds.");
         el("action").hidden=false;el("action").textContent="Make another rangoli";effect=1;
       }else{
-        const lines=["There’s a lamp outside every doorway. Somewhere beyond them is the home I remember.","I can hear people calling our names. Sita, Lakshmana, come with me through the gate."];
-        setLine(lines[visited-1],"RAMA");el("count").textContent=visited+" / 3";
+        const lines=["Carry the flowers to the left post.","One end is tied. Carry the loose end across to the other post.","Lead Sita and Lakshmana beneath the garland."];
+        setLine(lines[visited-1]);el("goal").textContent=homecoming[visited].goal;
+        el("count").textContent=visited+" / 4";
       }
       updateTargets();
     }
@@ -96,14 +104,14 @@
     const closest=[...targetList].sort((a,b)=>dist(player,a)-dist(player,b))[0];
     if(!closest)return;
     if(dist(player,closest)<105){act(closest.id);destination=null;actionTarget=null}
-    else setLine(phase==="story"?"Walk to the next glowing lamp on the road.":"Walk closer to a glowing mark, then press E.",phase==="story"?"RAMA":"NANI");
+    else setLine(phase==="story"?"Walk to the marked object, then press E.":"Walk closer to a glowing mark, then press E.");
   }
   function beginStory(){
     phase="story";visited=0;destination=null;actionTarget=null;effect=1;
     Object.assign(player,{x:779,y:774,face:1});Object.assign(friend,{x:657,y:805});
     el("chapter").textContent="NANI’S RAMAYANA";el("title").textContent="The homecoming";
-    el("goal").textContent="Follow the lamps as Rama";el("count").textContent="0 / 3";el("action").hidden=true;
-    setLine("In our family’s Diwali story, Ayodhya lit lamps for Rama, Sita and Lakshmana. Step into Rama’s shoes and follow the lights home.");
+    el("goal").textContent=homecoming[0].goal;el("count").textContent="0 / 4";el("action").hidden=true;
+    setLine("Ayodhya’s lamps welcome Rama, Sita and Lakshmana home. As Rama, lift the marigolds from the basket.");
     updateTargets();
   }
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -136,11 +144,11 @@
       if(p.amount===1){
         painting=null;count++;burst(p.x,p.y,p.fill,20);
         el("count").textContent=count+" / 3";
-        if(count<3)setLine(count===1?"Look how that colour sits beside mine. What shall we put in the next petal?":"One last petal. Then there’s room in the middle for our little lamp.");
+        if(count<3)setLine(count===1?"Two chalk petals to fill. Choose their colours.":"Fill the last petal, then light the diya.");
         else{
           phase="diya";el("goal").textContent="Light the centre diya";el("count").textContent="✧";el("tools").hidden=true;
           el("action").hidden=false;el("action").textContent="Light the diya";
-          setLine("We draw rangoli at our threshold to welcome our guests. Light the diya in the middle and I’ll tell you about another welcome.");
+          setLine("The rangoli welcomes guests at the doorstep. Light the lamp at its centre.");
         }
         updateTargets();
       }
@@ -219,6 +227,29 @@
     if(on){const flick=Math.sin(t*8+x)*2;ctx.fillStyle="#ffb832";ctx.beginPath();ctx.moveTo(2,-31+flick);ctx.bezierCurveTo(-19,-3,-1,-3,1,-4);ctx.quadraticCurveTo(11,-8,2,-31+flick);ctx.fill();ellipse(0,-10,3.4,6.5,"#fffbaf")}else{ellipse(3,-6,3,2,"#514431")}
     ctx.restore();
   }
+  function flowers(start,end,sag=30){
+    const n=clamp(Math.round(dist(start,end)/7),8,40);
+    ctx.save();ctx.beginPath();ctx.moveTo(start.x,start.y);ctx.quadraticCurveTo((start.x+end.x)/2,(start.y+end.y)/2+sag*2,end.x,end.y);
+    ctx.strokeStyle="#773e21";ctx.lineWidth=5;ctx.stroke();
+    for(let i=0;i<=n;i++){
+      const u=i/n,x=start.x+(end.x-start.x)*u,y=start.y+(end.y-start.y)*u+4*u*(1-u)*sag;
+      ellipse(x,y,5,5,i%4===0?"#e95425":"#ffab19","#bc5921",.8);ellipse(x-1.2,y-1.4,2.3,2.1,"#ffdb52");
+      if(i%5===0)ellipse(x,y+5,2.7,3.4,"#148264");
+    }
+    ctx.restore();
+  }
+  function garlandScene(){
+    for(const p of [leftPost,rightPost]){
+      ellipse(p.x,p.y+2,14,4,"#41213366");
+      ctx.fillStyle="#713930";ctx.fillRect(p.x-5,p.y-90,10,90);ctx.fillStyle="#e2a245";ctx.fillRect(p.x-3,p.y-90,3,90);
+      ellipse(p.x,p.y-91,6,7,"#ffc846","#a95920",2);
+    }
+    ellipse(basket.x,basket.y,30,8,"#41213366");ellipse(basket.x,basket.y-10,28,15,"#b97131","#774023",3);
+    ellipse(basket.x,basket.y-17,28,8,"#805623","#f8c66d",2);
+    if(!visited)flowers({x:basket.x-21,y:basket.y-23},{x:basket.x+22,y:basket.y-23},8);
+    if(visited>=3)flowers({x:leftPost.x,y:leftPost.y-91},{x:rightPost.x,y:rightPost.y-91},35);
+    marker(homecoming[visited]?.x||gate.x,homecoming[visited]?.y||gate.y,true);
+  }
   function marker(x,y,active=false){
     const bob=Math.sin(t*3.7+x)*2.4;
     ellipse(x,y,active?25:15,active?9:7,null,"#ffe9a4b8",2);
@@ -243,9 +274,7 @@
     else{ctx.fillStyle="#dfb277";ctx.fillRect(0,0,W,H)}
     const sprites=[];
     if(story){
-      road.forEach((p,i)=>{
-        if(i<visited||i===visited){lamp(p.x,p.y,.65+(p.y-342)/600,true);if(i===visited)marker(p.x,p.y-30,true)}
-      });
+      garlandScene();
       const size=100+(player.y-340)*.26;
       sprites.push({y:friend.y,fn:()=>sprite("companions",friend.x,friend.y,size*.95,player.face,player.walking)});
       sprites.push({y:player.y,fn:()=>sprite("rama",player.x,player.y,size,player.face,player.walking,true)});
@@ -260,6 +289,11 @@
       for(let i=0;i<12;i++){const x=(i*145+t*(8+i%3))%W,y=(i*61+t*(12+i%4))%H;ctx.save();ctx.translate(x+Math.sin(i+t)*12,y);ctx.rotate(t*.8+i);ellipse(0,0,3.5,1.8,i%2?"#f6a021":"#e8537f");ctx.restore()}
     }
     sprites.sort((a,b)=>a.y-b.y).forEach(s=>s.fn());
+    if(story&&(visited===1||visited===2)){
+      const hand={x:player.x+12*player.face,y:player.y-(100+(player.y-340)*.26)*.47};
+      const other=visited===1?{x:friend.x+12,y:friend.y-(100+(player.y-340)*.26)*.42}:{x:leftPost.x,y:leftPost.y-91};
+      flowers(other,hand,visited===1?19:25);
+    }
     for(const p of particles){ctx.globalAlpha=Math.min(1,p.life*2);ellipse(p.x,p.y,p.s,p.s,p.c)}ctx.globalAlpha=1;
     if(destination&&actionTarget===null)ellipse(destination.x,destination.y,14+Math.sin(t*7)*2,6,null,"#fff4cc",2);
     if(effect){ctx.fillStyle='rgba(255,225,127,'+(effect*.8)+')';ctx.fillRect(0,0,W,H)}
